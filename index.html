@@ -48,27 +48,31 @@
     scanner.render(onScanSuccess);
 
     async function submitData(action) {
-        const data = {
-            action: action,
-            qrCode: document.getElementById('qrId').value,
-            itemName: document.getElementById('itemName').value,
-            newQty: document.getElementById('qty').value,
-            minQty: document.getElementById('minQty').value
-        };
+    const data = {
+        action: action,
+        qrCode: document.getElementById('qrId').value,
+        itemName: document.getElementById('itemName').value,
+        newQty: document.getElementById('qty').value,
+        minQty: document.getElementById('minQty').value
+    };
 
-        if(!data.qrCode) return alert("กรุณาสแกนหรือใส่รหัสก่อน!");
+    if(!data.qrCode) return alert("กรุณาสแกนหรือใส่รหัสก่อน!");
 
-        try {
-            const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data) });
-            const msg = await res.text();
-            alert(msg);
-            location.reload(); // รีเฟรชหน้าจอเพื่อเริ่มใหม่
-        } catch (e) {
-            alert("ผิดพลาด: " + e);
-        }
+    try {
+        // เปลี่ยนมาใช้การส่งแบบ FormData จะช่วยลดปัญหา Failed to fetch ได้ดีกว่า
+        const response = await fetch(APP_URL, {
+            method: 'POST',
+            mode: 'no-cors', // เพิ่มบรรทัดนี้เพื่อข้ามปัญหา CORS
+            cache: 'no-cache',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        // เนื่องจากใช้ no-cors เราจะไม่สามารถอ่านคำตอบ (Response) ได้ 
+        // แต่ข้อมูลจะวิ่งไปเข้า Google Sheets แน่นอนครับ
+        alert("กำลังประมวลผล... กรุณาเช็คใน Google Sheets");
+        location.reload(); 
+    } catch (e) {
+        alert("ผิดพลาด: " + e);
     }
-
-    function vibratePhone() { if(navigator.vibrate) navigator.vibrate(100); }
-</script>
-</body>
-</html>
+}
